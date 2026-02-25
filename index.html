@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ProfeDesk">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -491,17 +490,15 @@
     .esc-actions{width:100%;justify-content:flex-end;margin-top:.3rem;}
   }
 
-  /* PRINT / PDF */
-  @media print {
-    header,nav,.nav-tabs,.bottom-nav,.mas-menu,.mas-overlay,.toast,.save-reminder,.notif-overlay,.tray-overlay,.modal-bg,.btn,.btn-icon,.btn-sync,.btn-drive,.school-bar,.horario-vista-btns,.cal-nav,.form-actions{display:none!important;}
-    body{background:white!important;color:black!important;}
-    .tab-content{display:block!important;}
-    .tab-content:not(.print-target){display:none!important;}
-    .card{border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid;}
-    table{width:100%;}
-    .print-header{display:block!important;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid #333;}
-    .no-print{display:none!important;}
-  }
+  /* SYNC BAR */
+  #sync-bar{display:flex;align-items:center;gap:.4rem;padding:.3rem .7rem;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);font-size:.75rem;color:rgba(255,255,255,.75);}
+  #sync-icon{font-size:.9rem;}
+  /* SAVE REMINDER */
+  .save-reminder{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;color:white;padding:.7rem 1.3rem;border-radius:10px;font-size:.83rem;font-weight:500;z-index:998;opacity:0;transition:all .4s;border-left:3px solid var(--gold);display:flex;align-items:center;gap:.7rem;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.3);}
+  .save-reminder.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .save-reminder button{background:var(--gold);color:var(--ink);border:none;border-radius:6px;padding:.25rem .7rem;font-size:.76rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  /* PRINT */
+  @media print{header,nav,.nav-tabs,.bottom-nav,.mas-menu,.mas-overlay,.toast,.save-reminder,.notif-overlay,.tray-overlay,.modal-bg,.btn,.btn-icon,.btn-sync,.btn-drive,.school-bar,.horario-vista-btns,.cal-nav,.form-actions,#btn-instalar{display:none!important;}body{background:white!important;color:black!important;}.tab-content{display:block!important;}.tab-content:not(.print-target){display:none!important;}.card{border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid;}.print-header{display:block!important;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:2px solid #333;}}
   .print-header{display:none;}
 
 </style>
@@ -512,21 +509,17 @@
   <div class="logo">Profe<span>Desk</span></div>
   <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
     <!-- Drive status bar -->
-    <div class="drive-bar" id="drive-bar" title="Google Drive Sync">
-      <div class="drive-status-dot ds-off" id="drive-dot"></div>
-      <span class="drive-user" id="drive-user">Sin conectar</span>
-      <span class="drive-last" id="drive-last"></span>
+    <div class="drive-bar" id="sync-bar" title="Estado de sincronizacion">
+      <span id="sync-icon">💾</span>
+      <span id="sync-txt">Listo</span>
     </div>
-    <button class="btn-drive" id="btn-drive-login" onclick="driveLogin()">🔗 Conectar Drive</button>
-    <button class="btn-drive" id="btn-drive-sync" onclick="driveSync()" style="display:none;">☁️ <span class="sync-label">Sincronizar</span></button>
-    <button class="btn-drive danger" id="btn-drive-logout" onclick="driveLogout()" style="display:none;" title="Desconectar Drive">✕</button>
-    <button class="btn-sync" onclick="exportarDatos()" title="Exportar backup local">⬇️ <span class="sync-label">Backup</span></button>
+    <button class="btn-drive" onclick="exportarSync()" title="Guardar en carpeta OneDrive/Drive (mismo archivo siempre)">☁️ <span class="sync-label">Guardar sync</span></button>
+    <button class="btn-sync" onclick="exportarDatos()" title="Exportar backup con fecha">⬇️ <span class="sync-label">Backup</span></button>
     <button class="btn-sync" onclick="confirmarBorrarTodo()" title="Borrar todos los datos" style="border-color:rgba(192,57,43,.4);color:rgba(192,57,43,.8);">🗑️ <span class="sync-label">Borrar todo</span></button>
     <button class="btn-sync" onclick="document.getElementById('import-input').click()" title="Importar datos">⬆️ <span class="sync-label">Importar</span></button>
     <input type="file" id="import-input" accept=".json" style="display:none" onchange="importarDatos(event)">
     <button id="btn-instalar" style="display:none;align-items:center;gap:.4rem;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:.38rem .85rem;font-family:'DM Sans',sans-serif;font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;">⬇️ Instalar app</button>
     <div class="date-badge" id="fecha-live"></div>
-    <button class="btn-sync" onclick="openModal('drive-setup')" title="Configurar Drive" style="font-size:.85rem;">⚙️</button>
   </div>
 </header>
 
@@ -948,7 +941,7 @@
   </div>
 </div>
 
-<div class="save-reminder" id="save-reminder">💾 Tenés cambios sin guardar en backup <button onclick="exportarDatos();hideSaveReminder()">Exportar ahora</button></div>
+<div class="save-reminder" id="save-reminder">⚠️ Tenés cambios sin guardar en OneDrive <button onclick="exportarSync();hideSaveReminder()">Guardar ahora</button></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -963,34 +956,11 @@ const TIPO_LABEL={examen:'📝 Examen',notas:'📋 Entrega notas',evento:'📌 E
 let calView={year:new Date().getFullYear(),month:new Date().getMonth()};
 
 let state={
-  escuelas:[
-    {id:1,nombre:'Escuela San Martín',dir:'Av. San Martín 400'},
-    {id:2,nombre:'Instituto Belgrano',dir:'Calle Belgrano 150'},
-    {id:3,nombre:'Colegio del Norte',dir:'Ruta 22 km 5'}
-  ],
-  materias:[
-    {id:1,nombre:'Economía'},
-    {id:2,nombre:'Contabilidad'},
-  ],
-  // cursoMaterias: qué materias tiene cada curso
-  // cursoMaterias[cursoId] = [materiaId, ...]
-  cursoMaterias:{1:[1,2],2:[1],3:[2],4:[1,2]},
-  cursos:[
-    {id:1,nombre:'3°B',escuelaId:1},
-    {id:2,nombre:'1°A',escuelaId:2},
-    {id:3,nombre:'2°A',escuelaId:2},
-    {id:4,nombre:'4°C',escuelaId:3}
-  ],
-  alumnos:[
-    {id:1,nombre:'García, Lucía',    cursoId:1,notas:{}},
-    {id:2,nombre:'Martínez, Rodrigo',cursoId:1,notas:{}},
-    {id:3,nombre:'Fernández, Sofía', cursoId:1,notas:{}},
-    {id:4,nombre:'López, Tomás',     cursoId:1,notas:{}},
-    {id:5,nombre:'Álvarez, Giuliana',cursoId:2,notas:{}},
-    {id:6,nombre:'Benítez, Ramiro',  cursoId:2,notas:{}},
-    {id:7,nombre:'Sosa, Valentina',  cursoId:3,notas:{}},
-    {id:8,nombre:'Romero, Diego',    cursoId:4,notas:{}}
-  ],
+  escuelas:[],
+  materias:[],
+  cursoMaterias:{},
+  cursos:[],
+  alumnos:[],
   // temas[`${cursoId}_${materiaId}_${fecha}`] = { titulo, descripcion }
   temas:{},
   // asistencia[`${cursoId}_${materiaId}_${fecha}`] = { alumnoId: { estado, nota } }
@@ -1011,33 +981,8 @@ let state={
   notas:[],
 };
 
-// Seed eventos demo
-(function seedEventos(){
-  const today=new Date();
-  const add=(n)=>{const d=new Date(today);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
-  state.eventos=[
-    {id:901,titulo:'Parcial de Economía 3°B',tipo:'examen',fecha:add(3),escuelaId:1,obs:'Unidades 1 a 3'},
-    {id:902,titulo:'Entrega notas 1° trimestre',tipo:'notas',fecha:add(7),escuelaId:null,obs:''},
-    {id:903,titulo:'Acto escolar Día del Maestro',tipo:'evento',fecha:add(12),escuelaId:2,obs:''},
-    {id:904,titulo:'Parcial Intro Eco 1°A',tipo:'examen',fecha:add(0),escuelaId:2,obs:'Tema: Sistemas económicos'},
-    {id:905,titulo:'Cierre de notas boletín',tipo:'notas',fecha:add(21),escuelaId:null,obs:''},
-  ];
-})();
-
-// Datos de ejemplo de asistencia para demo
-(function seedAsistencia(){
-  const today=new Date();
-  const fmt=d=>d.toISOString().slice(0,10);
-  const days=(n)=>{const d=new Date(today);d.setDate(d.getDate()-n);return fmt(d);};
-  const set=(cursoId,materiaId,fecha,data)=>{state.asistencia[`${cursoId}_${materiaId}_${fecha}`]=data;};
-  const c1alumnos=[1,2,3,4];
-  for(let i=0;i<5;i++){
-    const obj={};
-    c1alumnos.forEach((aId)=>{obj[aId]={estado:['P','P','A'][i%3],nota:null};});
-    obj[1]={estado:'P',nota:null};obj[2]={estado:'A',nota:null};
-    set(1,1,days(i*2),obj);
-  }
-})();
+// Seed eventos y asistencia SOLO si no hay datos guardados
+// Se ejecuta después de loadLS() — ver más abajo
 
 // ══════════════════════
 // HELPERS
@@ -2090,7 +2035,7 @@ function renderAll(){
 // ══════════════════════
 const LS_KEY='profedesk_v6';
 function saveLS(){
-  if(typeof trackChange==='function')trackChange();
+  if(typeof trackSyncChange==='function')trackSyncChange();
   const toSave={
     escuelas:state.escuelas,
     cursos:state.cursos,
@@ -2113,7 +2058,20 @@ function loadLS(){
     const raw=localStorage.getItem(LS_KEY);
     if(!raw)return false;
     const data=JSON.parse(raw);
-    Object.assign(state,data);
+    // Reemplazar cada campo explicitamente para respetar arrays vacios []
+    if(data.escuelas      !==undefined)state.escuelas     =data.escuelas;
+    if(data.cursos        !==undefined)state.cursos       =data.cursos;
+    if(data.materias      !==undefined)state.materias     =data.materias;
+    if(data.cursoMaterias !==undefined)state.cursoMaterias=data.cursoMaterias;
+    if(data.alumnos       !==undefined)state.alumnos      =data.alumnos;
+    if(data.asistencia    !==undefined)state.asistencia   =data.asistencia;
+    if(data.temas         !==undefined)state.temas        =data.temas;
+    if(data.seguimiento   !==undefined)state.seguimiento  =data.seguimiento;
+    if(data.eventos       !==undefined)state.eventos      =data.eventos;
+    if(data.notas         !==undefined)state.notas        =data.notas;
+    if(data.horario       !==undefined)state.horario      =data.horario;
+    if(data.trayectoria   !==undefined)state.trayectoria  =data.trayectoria;
+    if(data.nextId        !==undefined)state.nextId       =data.nextId;
     return true;
   }catch(e){return false;}
 }
@@ -2463,6 +2421,52 @@ document.getElementById('asist-fecha').value=_d.toISOString().slice(0,10);
 // Cargar desde localStorage (sobreescribe demos si hay datos guardados)
 const _hasSaved=loadLS();
 
+// Cargar datos de ejemplo SOLO si es la primera vez (sin datos guardados)
+if(!_hasSaved){
+  const today=new Date();
+  const add=(n)=>{const d=new Date(today);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+  const days=(n)=>{const d=new Date(today);d.setDate(d.getDate()-n);return d.toISOString().slice(0,10);};
+  // Escuelas de ejemplo
+  state.escuelas=[
+    {id:1,nombre:'Escuela San Martín',dir:'Av. San Martín 400'},
+    {id:2,nombre:'Instituto Belgrano',dir:'Calle Belgrano 150'},
+    {id:3,nombre:'Colegio del Norte',dir:'Ruta 22 km 5'}
+  ];
+  state.materias=[{id:1,nombre:'Economía'},{id:2,nombre:'Contabilidad'}];
+  state.cursoMaterias={1:[1,2],2:[1],3:[2],4:[1,2]};
+  state.cursos=[
+    {id:1,nombre:'3°B',escuelaId:1},{id:2,nombre:'1°A',escuelaId:2},
+    {id:3,nombre:'2°A',escuelaId:2},{id:4,nombre:'4°C',escuelaId:3}
+  ];
+  state.alumnos=[
+    {id:1,nombre:'García, Lucía',cursoId:1,notas:{}},
+    {id:2,nombre:'Martínez, Rodrigo',cursoId:1,notas:{}},
+    {id:3,nombre:'Fernández, Sofía',cursoId:1,notas:{}},
+    {id:4,nombre:'López, Tomás',cursoId:1,notas:{}},
+    {id:5,nombre:'Álvarez, Giuliana',cursoId:2,notas:{}},
+    {id:6,nombre:'Benítez, Ramiro',cursoId:2,notas:{}},
+    {id:7,nombre:'Sosa, Valentina',cursoId:3,notas:{}},
+    {id:8,nombre:'Romero, Diego',cursoId:4,notas:{}}
+  ];
+  state.eventos=[
+    {id:901,titulo:'Parcial de Economía 3°B',tipo:'examen',fecha:add(3),escuelaId:1,obs:'Unidades 1 a 3'},
+    {id:902,titulo:'Entrega notas 1° trimestre',tipo:'notas',fecha:add(7),escuelaId:null,obs:''},
+    {id:903,titulo:'Acto escolar Día del Maestro',tipo:'evento',fecha:add(12),escuelaId:2,obs:''},
+    {id:904,titulo:'Parcial Intro Eco 1°A',tipo:'examen',fecha:add(0),escuelaId:2,obs:'Tema: Sistemas económicos'},
+    {id:905,titulo:'Cierre de notas boletín',tipo:'notas',fecha:add(21),escuelaId:null,obs:''},
+  ];
+  const c1alumnos=[1,2,3,4];
+  for(let i=0;i<5;i++){
+    const obj={};
+    c1alumnos.forEach((aId)=>{obj[aId]={estado:['P','P','A'][i%3],nota:null};});
+    obj[1]={estado:'P',nota:null};obj[2]={estado:'A',nota:null};
+    state.asistencia[`1_1_${days(i*2)}`]=obj;
+  }
+  state.nextId=100;
+  saveLS(); // Guardar los datos de ejemplo para que no vuelvan a cargarse
+}
+
+
 ['modal-alumno','modal-escuela','modal-curso','modal-seguimiento','modal-evento','modal-nota','modal-materia','modal-import-alumnos','modal-clase','modal-interv','modal-drive-setup'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('click',e=>{if(e.target.id===id)closeModal(id.replace('modal-',''));});
@@ -2475,7 +2479,7 @@ setTimeout(mostrarNotificacion, 600);
 
 renderAll();
 if(_hasSaved)showToast('✅ Datos cargados correctamente');
-else showToast('👋 Bienvenido a ProfeDesk. Empezá agregando una escuela.');
+else showToast('👋 Bienvenido a ProfeDesk');
 
 // ══════════════════════════════════════════════
 // GOOGLE DRIVE SYNC
@@ -3162,20 +3166,40 @@ function deleteIntervActual(){
 }
 
 
-// ══════════════════════════════════════════════
-// SAVE REMINDER (muestra aviso después de 3 min de edición sin backup)
-// ══════════════════════════════════════════════
-let _lastBackup = Date.now();
-let _pendingChanges = 0;
-let _reminderTimer = null;
+// ═══════════════════════════════════════════════════
+// SYNC CON CARPETA LOCAL (OneDrive / Google Drive)
+// ═══════════════════════════════════════════════════
+let _unsavedChanges = 0;
+let _reminderShown = false;
 
-function trackChange() {
-  _pendingChanges++;
-  clearTimeout(_reminderTimer);
-  // Mostrar recordatorio después de 3 minutos de cambios acumulados
-  _reminderTimer = setTimeout(function() {
-    if (_pendingChanges >= 3) showSaveReminder();
-  }, 3 * 60 * 1000);
+function setSyncStatus(icon, text) {
+  const ic = document.getElementById('sync-icon');
+  const lb = document.getElementById('sync-txt');
+  if(ic) ic.textContent = icon;
+  if(lb) lb.textContent = text;
+}
+
+function exportarSync() {
+  const datos = {
+    version:16, fecha:new Date().toISOString(),
+    escuelas:state.escuelas, cursos:state.cursos, materias:state.materias,
+    cursoMaterias:state.cursoMaterias, alumnos:state.alumnos,
+    asistencia:state.asistencia, temas:state.temas, seguimiento:state.seguimiento,
+    eventos:state.eventos, notas:state.notas, horario:state.horario||[],
+    trayectoria:state.trayectoria||{}, nextId:state.nextId,
+  };
+  const blob = new Blob([JSON.stringify(datos,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'profedesk_sync.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  _unsavedChanges = 0;
+  _reminderShown = false;
+  hideSaveReminder();
+  setSyncStatus('✅','Guardado');
+  showToast('☁️ Guardado como profedesk_sync.json');
+  setTimeout(function(){ setSyncStatus('💾','Listo'); }, 5000);
 }
 
 function showSaveReminder() {
@@ -3183,94 +3207,69 @@ function showSaveReminder() {
 }
 function hideSaveReminder() {
   document.getElementById('save-reminder').classList.remove('show');
-  _pendingChanges = 0;
-  _lastBackup = Date.now();
-  clearTimeout(_reminderTimer);
 }
 
-// ══════════════════════════════════════════════
+function trackSyncChange() {
+  _unsavedChanges++;
+  if(_unsavedChanges >= 5 && !_reminderShown) {
+    setSyncStatus('⚠️', _unsavedChanges + ' cambios');
+  }
+  if(_unsavedChanges >= 15 && !_reminderShown) {
+    _reminderShown = true;
+    showSaveReminder();
+  }
+}
+
+// ═══════════════════════════════════════════════════
 // BORRAR TODO
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function confirmarBorrarTodo() {
-  const confirm1 = confirm('⚠️ ATENCIÓN: Esto eliminará TODOS tus datos (alumnos, asistencia, seguimiento, etc.)\n\n¿Estás seguro?');
-  if (!confirm1) return;
-  const confirm2 = confirm('Esta acción NO se puede deshacer.\n\n¿Querés hacer un backup antes de borrar?');
-  if (confirm2) { exportarDatos(); }
-  // Dar tiempo para descargar
+  if(!confirm('ATENCION: Esto eliminara TODOS tus datos.\n\nEsta accion NO se puede deshacer.\n\n¿Continuar?')) return;
+  if(confirm('¿Queres hacer un backup antes de borrar?')) { exportarDatos(); }
   setTimeout(function() {
-    const ok = confirm('¿Confirmar el borrado de todos los datos?');
-    if (!ok) return;
+    if(!confirm('¿Confirmar el borrado de todos los datos?')) return;
     localStorage.removeItem(LS_KEY);
     location.reload();
-  }, 500);
+  }, 600);
 }
 
-// ══════════════════════════════════════════════
-// IMPRIMIR / EXPORTAR PDF
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// IMPRIMIR / PDF
+// ═══════════════════════════════════════════════════
 function imprimirSeccion(seccion) {
-  // Marcar la sección a imprimir
-  document.querySelectorAll('.tab-content').forEach(function(t) {
-    t.classList.remove('print-target');
-  });
-  const el = document.getElementById('tab-' + seccion);
-  if (el) el.classList.add('print-target');
-
-  // Agregar header de impresión temporal
-  const hoy = new Date().toLocaleDateString('es-AR', {day:'2-digit', month:'2-digit', year:'numeric'});
-  const titulo = seccion === 'asistencia' ? 'Asistencia' : 'Seguimiento pedagógico';
-
-  let printHeader = document.getElementById('print-header-temp');
-  if (!printHeader) {
-    printHeader = document.createElement('div');
-    printHeader.id = 'print-header-temp';
-    printHeader.className = 'print-header';
-    document.body.prepend(printHeader);
-  }
-  printHeader.innerHTML = '<strong>ProfeDesk — ' + titulo + '</strong> &nbsp;|&nbsp; Impreso: ' + hoy;
-
+  document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('print-target'); });
+  const el = document.getElementById('tab-'+seccion);
+  if(el) el.classList.add('print-target');
+  const hoy = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const titulo = {asistencia:'Asistencia',seguimiento:'Seguimiento pedagogico',historial:'Historial'}[seccion]||seccion;
+  let ph = document.getElementById('print-header-temp');
+  if(!ph){ ph=document.createElement('div'); ph.id='print-header-temp'; ph.className='print-header'; document.body.prepend(ph); }
+  ph.innerHTML = '<strong>ProfeDesk — '+titulo+'</strong> &nbsp;|&nbsp; '+hoy;
   window.print();
-
-  // Limpiar después
-  setTimeout(function() {
-    document.querySelectorAll('.tab-content').forEach(function(t) {
-      t.classList.remove('print-target');
-    });
-  }, 1000);
+  setTimeout(function(){ document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('print-target'); }); }, 1000);
 }
 
-
-// ══════════════════════════════════════════════
-// PWA — SERVICE WORKER + INSTALL PROMPT
-// ══════════════════════════════════════════════
-if ('serviceWorker' in navigator) {
+// ═══════════════════════════════════════════════════
+// PWA INSTALL
+// ═══════════════════════════════════════════════════
+if('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js')
-      .then(function() { console.log('ProfeDesk SW registrado'); })
-      .catch(function(e) { console.warn('SW no disponible:', e); });
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
   });
 }
-
 let _deferredInstall = null;
 window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  _deferredInstall = e;
+  e.preventDefault(); _deferredInstall = e;
   const btn = document.getElementById('btn-instalar');
-  if (btn) {
-    btn.style.display = 'flex';
+  if(btn) {
+    btn.style.display='flex';
     btn.onclick = async function() {
       _deferredInstall.prompt();
       const r = await _deferredInstall.userChoice;
-      if (r.outcome === 'accepted') showToast('✅ ProfeDesk instalada correctamente');
-      _deferredInstall = null;
-      btn.style.display = 'none';
+      if(r.outcome==='accepted') showToast('ProfeDesk instalada correctamente');
+      _deferredInstall=null; btn.style.display='none';
     };
   }
-});
-window.addEventListener('appinstalled', function() {
-  showToast('🎉 ProfeDesk instalada en tu dispositivo');
-  const btn = document.getElementById('btn-instalar');
-  if (btn) btn.style.display = 'none';
 });
 
 </script>
