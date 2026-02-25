@@ -2033,7 +2033,7 @@ function renderAll(){
 // ══════════════════════
 // LOCALSTORAGE
 // ══════════════════════
-const LS_KEY='profedesk_v6';
+const LS_KEY='profedesk_v16';
 function saveLS(){
   if(typeof trackSyncChange==='function')trackSyncChange();
   const toSave={
@@ -2419,7 +2419,9 @@ document.getElementById('fecha-live').textContent=`${_dias[_d.getDay()]} ${_d.ge
 document.getElementById('asist-fecha').value=_d.toISOString().slice(0,10);
 
 // Cargar desde localStorage (sobreescribe demos si hay datos guardados)
-const _hasSaved=loadLS();
+// Init async
+(async function initApp(){
+const _hasSaved=await loadLS();
 
 // Cargar datos de ejemplo SOLO si es la primera vez (sin datos guardados)
 if(!_hasSaved){
@@ -2480,6 +2482,7 @@ setTimeout(mostrarNotificacion, 600);
 renderAll();
 if(_hasSaved)showToast('✅ Datos cargados correctamente');
 else showToast('👋 Bienvenido a ProfeDesk');
+})(); // end initApp
 
 // ══════════════════════════════════════════════
 // GOOGLE DRIVE SYNC
@@ -2766,15 +2769,7 @@ async function driveSync() {
   }
 }
 
-// ── Auto-sync: interceptar saveLS para también subir a Drive ──
-const _originalSaveLS = saveLS;
-function saveLS() {
-  _originalSaveLS();
-  if (gDrive.ready && gDrive.accessToken) {
-    driveSetUI('syncing', gDrive.userEmail, 'guardando…');
-    drivePush().catch(() => driveSetUI('error', gDrive.userEmail));
-  }
-}
+// Drive sync desactivado - usando sync con carpeta local
 
 // ── Agregar modal-drive-setup a la lista de modales ──
 // modal-drive-setup listener handled above
