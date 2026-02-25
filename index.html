@@ -3147,6 +3147,15 @@ function deleteIntervActual(){
   showToast('Intervencion eliminada');
   closeModal('interv');saveLS();renderTrayIntervenciones();
 }
+// Limpiar service workers y cachés viejos
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+if('caches' in window){
+  caches.keys().then(keys=>keys.forEach(k=>{
+    if(k!=='profedesk-v15')caches.delete(k);
+  }));
+}
 
 </script>
 
